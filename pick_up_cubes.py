@@ -46,10 +46,10 @@ psi= moveit_commander.PlanningSceneInterface()
 table_pose = geometry_msgs.msg.PoseStamped()
 table_pose.header.frame_id = "base"
 table_pose.pose.position.x = 0.75
-table_pose.pose.position.y = -0.1
+table_pose.pose.position.y = -0.13
 table_pose.pose.position.z = -0.28
 table_pose.pose.orientation.w = 1.0
-psi.add_box("table", pose=table_pose, size=(0.8, 0.8, 0.2)) #edited table size
+psi.add_box("table", pose=table_pose, size=(0.8, 0.8, 0.10)) #edited table size
 
 window_collider_pose = geometry_msgs.msg.PoseStamped()
 window_collider_pose.header.frame_id = "base"
@@ -68,13 +68,30 @@ pickup_posture.position = [-0.051150390625, -0.831271484375, -0.1108291015625, 2
 '''
 IN PROGRESS 
 
-
-
 REFERENCE: green-yellow
 
 can be used to build tower borders, change poses and positions
 blue-orange needs to be more forward, block pickup location forward
 save poses
+
+'''
+#array of pos
+positions = []
+
+#position 1
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.8867910107919338
+loc.pose.position.y = 0.07648888673307797
+loc.pose.position.z = -0.15758351808118645
+
+loc.pose.orientation.x = -0.021546827744775888
+loc.pose.orientation.y = 0.9996207910915778
+loc.pose.orientation.z = -0.010990924363512537
+loc.pose.orientation.w = 0.013160843940309808
+
+positions.append(loc)
+'''
 
 cubes= dict()
 
@@ -88,42 +105,6 @@ cube.pose.orientation.x = -0.188
 cube.pose.orientation.y = 0.981
 cube.pose.orientation.z = -0.020
 cube.pose.orientation.w = 0.035
-cubes[color] = cube
-
-color = "blue"
-cube = geometry_msgs.msg.PoseStamped()
-cube.header.frame_id = "base"
-cube.pose.position.x = 0.664
-cube.pose.position.y = -0.057573
-cube.pose.position.z = -0.15173
-cube.pose.orientation.x = 0.186621
-cube.pose.orientation.y = -0.97907
-cube.pose.orientation.z = 0.0805411
-cube.pose.orientation.w = 0.0103705
-cubes[color] = cube
-
-color = "orange"
-cube = geometry_msgs.msg.PoseStamped()
-cube.header.frame_id = "base"
-cube.pose.position.x = 0.634108
-cube.pose.position.y = 0.186313
-cube.pose.position.z = -0.154222
-cube.pose.orientation.x = 0.510415
-cube.pose.orientation.y = -0.851931
-cube.pose.orientation.z = 0.113435
-cube.pose.orientation.w = 0.028699
-cubes[color] = cube
-
-color = "wooden" #fix, too far
-cube = geometry_msgs.msg.PoseStamped()
-cube.header.frame_id = "base"
-cube.pose.position.x = 0.91436
-cube.pose.position.y = -0.27065
-cube.pose.position.z = -0.14875
-cube.pose.orientation.x = -0.23652
-cube.pose.orientation.y = 0.94525
-cube.pose.orientation.z = 0.010588
-cube.pose.orientation.w = 0.2246
 cubes[color] = cube
 
 color = "green"
@@ -178,11 +159,32 @@ def pick_up_cube():
     pickup_pose = mgc.get_current_pose()
     pickup_pose.pose.position.z-=0.15
     
-    mgc.set_pose_target(p_2)
+    mgc.set_pose_target(pickup_pose)
     mgc.go(wait=True)
-    group.clear_pose_targets
+    mgc.clear_pose_targets
 ''' 
-    derded
+    
+    move_to_pickup()
+    open_gripper()
+    #go lower
+    pickup_pose = mgc.get_current_pose()
+    pickup_pose.pose.position.z-=0.15
+    move_fast(mgc)
+    move_to_pose(pickup_pose)
+    close_gripper()
+    pickup_pose.pose.position.z += 0.2
+    move_to_pose(pickup_pose)
+
+def stack_pyramid(index):
+    t = deepcopy(positions[index])
+    move_to_pose(t)
+    t.pose.position.z -= 0.02
+    move_to_pose(t)
+    open_gripper()
+    rospy.sleep(rospy.Duration(1.0))
+    #move up so it doesnt hit block (NEEDS FIXING)
+    #t.pose.position.z += 0.3
+    #move_to_pose(t)
 
 '''
 def place_cube(color):
@@ -192,8 +194,11 @@ def place_cube(color):
     say(f"Please hand me the {color} cube.")
     # wait_for_external_effort()
     close_gripper()
+
+
+
     t = deepcopy(cubes[color])
-    t.pose.position.z += 0.05
+    t.pose.position.z += 0.10
     move_fast(mgc)
     move_to_pose(t)
     move_slow(mgc)
@@ -203,11 +208,17 @@ def place_cube(color):
     move_to_pose(t)
 '''
 
-open_gripper()
-move_to_pickup()
-pick_up_cube()
 #say("Hello, let's try to build a tower.")
-rospy.sleep(rospy.Duration(5.0))
+for i in range(len(positions)):
+    ready()
+    rospy.sleep(rospy.Duration(1.0))
+    pick_up_cube()
+    rospy.sleep(rospy.Duration(1.0))
+    stack_pyramid(i)
+ready()
+
+
+
 
 '''
 replace with normal pick up, place
@@ -220,4 +231,4 @@ for color in todo:
     ready()
 '''
 
-say("All done.")
+#say("All done.")
