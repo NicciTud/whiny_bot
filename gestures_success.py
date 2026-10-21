@@ -11,8 +11,9 @@ mgc_global = moveit_commander.MoveGroupCommander("arm")
 mgc_global.set_max_velocity_scaling_factor(1.0)
 mgc_global.set_max_acceleration_scaling_factor(1.0)
 
-# neutral pose, same as pickup_posture
-BASE = [-0.051150390625, -0.831271484375, -0.1108291015625, 2.091619140625, 0.1726298828125, 0.3259853515625, -0.2090615234375]
+# neutral pose, similar to ready
+BASE = [0.758423670034864, 0.16016586314455136, 0.16016586314455136, 
+        -0.04326329491007631, 0.9166717183780757, 0.00042531220077697416, 0.39729216849674026]
 
 def go(positions):
     js = JointState()
