@@ -59,26 +59,39 @@ window_collider_pose.pose.position.z = 0.0
 window_collider_pose.pose.orientation.w = 1.0
 psi.add_box("window_collider", pose=window_collider_pose, size=(1.6, 0.2, 1.5))
 
-
-#waiting to pickup blocks pose, replace with move to top grasp
-pickup_posture = JointState()
-pickup_posture.name = ["right_j0", "right_j1", "right_j2", "right_j3", "right_j4", "right_j5", "right_j6"]
-pickup_posture.position = [-0.051150390625, -0.831271484375, -0.1108291015625, 2.091619140625, 0.1726298828125, 0.3259853515625, -0.2090615234375]
-
 '''
 IN PROGRESS 
 
-REFERENCE: green-yellow
+create reference pose for box to drop cubes into
 
-can be used to build tower borders, change poses and positions
-blue-orange needs to be more forward, block pickup location forward
-save poses
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.8867910107919338
+loc.pose.position.y = 0.07648888673307797
+loc.pose.position.z = -0.15758351808118645
 
+loc.pose.orientation.x = -0.021546827744775888
+loc.pose.orientation.y = 0.9996207910915778
+loc.pose.orientation.z = -0.010990924363512537
+loc.pose.orientation.w = 0.013160843940309808
 '''
-#array of pos
-positions = []
+#drop into box pose
+box_posture = JointState()
+box_posture.name = ["right_j0", "right_j1", "right_j2", "right_j3", "right_j4", "right_j5", "right_j6"]
+box_posture.position = [0.8867910107919338,  0.07648888673307797, -0.15758351808118645, -0.021546827744775888, 0.9996207910915778, -0.010990924363512537, 0.013160843940309808]
 
-#position 1
+
+#positions dict and keys
+positions = dict()
+'''
+IN PROGRESS
+
+update with all 6-9 initial block positions
+make sure it is positioned a bit above the block, so it can crane game descend
+'''
+
+#position 1 
+index= "slot_1"
 loc = geometry_msgs.msg.PoseStamped()
 loc.header.frame_id = "base"
 loc.pose.position.x = 0.8867910107919338
@@ -90,47 +103,7 @@ loc.pose.orientation.y = 0.9996207910915778
 loc.pose.orientation.z = -0.010990924363512537
 loc.pose.orientation.w = 0.013160843940309808
 
-positions.append(loc)
-'''
-
-cubes= dict()
-
-color="red" #fix, too far
-cube = geometry_msgs.msg.PoseStamped()
-cube.header.frame_id = "base"
-cube.pose.position.x = 0.697
-cube.pose.position.y = -0.369
-cube.pose.position.z = -0.152
-cube.pose.orientation.x = -0.188
-cube.pose.orientation.y = 0.981
-cube.pose.orientation.z = -0.020
-cube.pose.orientation.w = 0.035
-cubes[color] = cube
-
-color = "green"
-cube = geometry_msgs.msg.PoseStamped()
-cube.header.frame_id = "base"
-cube.pose.position.x = 0.876844
-cube.pose.position.y = -0.0194747
-cube.pose.position.z = -0.155714
-cube.pose.orientation.x = -0.0274387
-cube.pose.orientation.y = 0.996718
-cube.pose.orientation.z = -0.0109193
-cube.pose.orientation.w = 0.0753798
-cubes[color] = cube
-
-color = "yellow"
-cube = geometry_msgs.msg.PoseStamped()
-cube.header.frame_id = "base"
-cube.pose.position.x = 0.787161
-cube.pose.position.y = 0.28444
-cube.pose.position.z = -0.149635
-cube.pose.orientation.x = -0.292078
-cube.pose.orientation.y = 0.955773
-cube.pose.orientation.z = -0.0124869
-cube.pose.orientation.w = 0.0321393
-cubes[color] = cube
-'''
+positions[index] = loc
 
 def move_slow(mgc):
     mgc.set_max_velocity_scaling_factor(0.03)
@@ -140,8 +113,8 @@ def move_fast(mgc):
     mgc.set_max_velocity_scaling_factor(1.0)
     mgc.set_max_acceleration_scaling_factor(1.0)
 
-def move_to_pickup():
-    mgc_global.set_joint_value_target(pickup_posture)
+def move_to_box():
+    mgc_global.set_joint_value_target(box_posture)
     mgc_global.go(wait=True)
 
 def move_to_pose(pose):
@@ -152,83 +125,55 @@ def ready():
     mgc_global.set_named_target("ready")
     mgc_global.go(wait=True)
 
-def pick_up_cube():
-    '''
-    IN PROGRESS
-    #go lower
-    pickup_pose = mgc.get_current_pose()
-    pickup_pose.pose.position.z-=0.15
-    
-    mgc.set_pose_target(pickup_pose)
-    mgc.go(wait=True)
-    mgc.clear_pose_targets
-''' 
-    
-    move_to_pickup()
+def pick_up_cube(pose):
     open_gripper()
-    #go lower
-    pickup_pose = mgc.get_current_pose()
-    pickup_pose.pose.position.z-=0.15
     move_fast(mgc)
-    move_to_pose(pickup_pose)
-    close_gripper()
-    pickup_pose.pose.position.z += 0.2
-    move_to_pose(pickup_pose)
+    move_to_pose(pose)
 
-def stack_pyramid(index):
-    t = deepcopy(positions[index])
-    move_to_pose(t)
-    t.pose.position.z -= 0.02
-    move_to_pose(t)
-    open_gripper()
-    rospy.sleep(rospy.Duration(1.0))
-    #move up so it doesnt hit block (NEEDS FIXING)
-    #t.pose.position.z += 0.3
-    #move_to_pose(t)
-
-'''
-def place_cube(color):
-    if color not in cubes:
-        raise ValueError(f"No pose defined for color '{color}'")
-    move_to_pickup()
-    say(f"Please hand me the {color} cube.")
-    # wait_for_external_effort()
-    close_gripper()
-
-
-
-    t = deepcopy(cubes[color])
-    t.pose.position.z += 0.10
-    move_fast(mgc)
-    move_to_pose(t)
+    #lower
+    grasp = deepcopy(pose_above)
+    grasp.pose.position.z -= 0.15
     move_slow(mgc)
-    move_to_pose(cubes[color])
-    open_gripper()
+    move_to_pose(grasp)
+
+    #close
+    close_gripper()
+
+    #go up
     move_fast(mgc)
-    move_to_pose(t)
-'''
-
-#say("Hello, let's try to build a tower.")
-for i in range(len(positions)):
-    ready()
-    rospy.sleep(rospy.Duration(1.0))
-    pick_up_cube()
-    rospy.sleep(rospy.Duration(1.0))
-    stack_pyramid(i)
-ready()
-
-
-
+    move_to_pose(pose)
 
 '''
-replace with normal pick up, place
+IN PROGRESS
+'''
+def get_block_in_line(index):
+    pick_up_cube(positions[index])
 
+    #move to box, and drop IN PROGRESS
+    move_slow(mgc)
+    move_to_pose(box_posture)
+    open_gripper()
+    rospy.sleep(rospy.Duration(1.0))
+
+    #move up so it doesnt hit block (NEEDS FIXING)
+    retreat = deepcopy(box_posture)
+    retreat.pose.position.z += 0.20
+    move_fast(mgc)
+    move_to_pose(retreat)
+
+#say("Hello, let's try to drop some blocks.")
+
+#IN PROGRESS, rando sleector of initial positions
 import random
-todo = list(cubes.keys())
+
+todo = list(positions.keys())
 random.shuffle(todo)
-for color in todo:
-    place_cube(color)
+
+for i in todo:
     ready()
-'''
+    rospy.sleep(rospy.Duration(1.0))
+    get_block_in_line(i)
+    rospy.sleep(rospy.Duration(1.0))
+ready()
 
 #say("All done.")
