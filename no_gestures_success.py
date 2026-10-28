@@ -16,9 +16,10 @@ pose_z - DESCEND >= tabletop_z , don't go below the table top.
 pose_z - DESCEND <= tabletop_z + h, you're at/below the block top, so you're actually on the block, not above it.
 '''
 
-DESCEND   = 0.15   # approach to grasp descent, tuned so gripper closes on block
-RETREAT_Z = 0.20   # post-drop lift to clear box
-RANDOMIZE = False  # True for actual, False for debugging
+DESCEND   = 0.185   # approach to grasp descent, tuned so gripper closes on block
+RETREAT_Z = 0.30   # post-drop lift to clear box
+RANDOMIZE = True  # True for actual, False for debugging
+gap = 0.12    # y step between blocks in the same row, 6 cm apart center to center
 
 rospy.init_node('no_gestures_pickup', anonymous=False)
 
@@ -80,7 +81,7 @@ create reference joint states for box to drop cubes into
 #drop into box pose
 box_posture = JointState()
 box_posture.name = ["right_j0", "right_j1", "right_j2", "right_j3", "right_j4", "right_j5", "right_j6"]
-box_posture.position = [-0.110380859375, 0.35265234375, -0.2605810546875, -0.5528466796875, 0.25176171875, 1.7379130859375, 0.0980244140625]
+box_posture.position = [-0.2729189453125, 0.3767265625, -0.222205078125, -0.7939072265625, 0.250521484375, 1.6111279296875, 0.026794921875]
 
 
 #positions dict and keys
@@ -91,13 +92,13 @@ make sure it is positioned a bit above the block, so it can crane game descend
 '''
 
 #hardcoded in lab
-gap = 0.06      # y step between blocks in the same row, 6 cm apart center to center
-GRASP_QUAT = (qx, qy, qz, qw)   #pls check, find from top grasp
+
+GRASP_QUAT = (0.07169260225135074,-0.9963911848868929, 0.015748911465860584,0.04262334160720189)   #pls check, find from top grasp
 
 anchor_even = geometry_msgs.msg.PoseStamped()
 anchor_even.header.frame_id = "base"
-anchor_even.pose.position.x = 0.52        #check pls, back row
-anchor_even.pose.position.y = -0.06       #even rows start coordinate
+anchor_even.pose.position.x = 0.65       #check pls, back row
+anchor_even.pose.position.y = -0.3       #even rows start coordinate
 anchor_even.pose.position.z = 0           #clearance above block
 
 anchor_even.pose.orientation.x = GRASP_QUAT[0]
@@ -106,8 +107,8 @@ anchor_even.pose.orientation.z = GRASP_QUAT[2]
 anchor_even.pose.orientation.w = GRASP_QUAT[3]
 
 anchor_odd = deepcopy(anchor_even)
-anchor_odd.pose.position.x = 0.58         #check pls, 6 cm ahead of back row
-anchor_odd.pose.position.y = -0.08        #odd start, 2 cm off
+anchor_odd.pose.position.x = 0.75        #check pls, 10 cm ahead of back row
+anchor_odd.pose.position.y = -0.25       #odd start, 5 cm off
 
 positions = {}
 for i in range(7):
@@ -169,9 +170,12 @@ def get_block_in_line(key):
         return False
 
     #move to box, and drop
-    move_slow(mgc_global)
     if not move_to_box():
         return False
+    descend = deepcopy(mgc.get_current_pose())
+    descend.pose.position.z -= 0.1
+    if not move_to_pose(descend):
+            return False
     open_gripper()
     rospy.sleep(rospy.Duration(1.0))
 

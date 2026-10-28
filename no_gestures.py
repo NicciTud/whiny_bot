@@ -18,12 +18,13 @@ pose_z - DESCEND >= tabletop_z , don't go below the table top. (-0.205 >=-0.23
 poze_z - DESCEND <= tabletop_z + h, you're at/below the block top, so you're actually on the block, not above it.
 "random" failing
 '''
-DESCEND   = 0.20   # approach to grasp descent, tuned so gripper closes on block
+DESCEND   = 0.185   # approach to grasp descent, tuned so gripper closes on block
 RETREAT_Z = 0.20   # post-drop lift to clear box
 RANDOMIZE = False   #True for actual, False for debugging
 FAIL_COUNT = 2          #how many MAX blocks fail per run
 FAIL_RATE  = 0.5        #probability a block fails *given* it's chosen
 FAIL_MODES = ["repeated_drop", "empty_pickup", "drop_in_space"]
+gap = 0.12      # y step between blocks in the same row, 6 cm apart center to center
 
 rospy.init_node('no_gestures_pickup', anonymous=False)
 
@@ -85,7 +86,7 @@ create reference joint states for box to drop cubes into
 #drop into box pose
 box_posture = JointState()
 box_posture.name = ["right_j0", "right_j1", "right_j2", "right_j3", "right_j4", "right_j5", "right_j6"]
-box_posture.position = [-0.110380859375, 0.35265234375, -0.2605810546875, -0.5528466796875, 0.25176171875, 1.7379130859375, 0.0980244140625]
+box_posture.position = [-0.2729189453125, 0.3767265625, -0.222205078125, -0.7939072265625, 0.250521484375, 1.6111279296875, 0.026794921875]
 
 
 #positions dict and keys
@@ -96,13 +97,12 @@ make sure it is positioned a bit above the block, so it can crane game descend
 '''
 
 #hardcoded in lab
-gap = 0.06      # y step between blocks in the same row, 6 cm apart center to center
-GRASP_QUAT = (qx, qy, qz, qw)   #pls check, find from top grasp
+GRASP_QUAT = (0.07169260225135074,-0.9963911848868929, 0.015748911465860584,0.04262334160720189)     #pls check, find from top grasp
 
 anchor_even = geometry_msgs.msg.PoseStamped()
 anchor_even.header.frame_id = "base"
-anchor_even.pose.position.x = 0.52        #check pls, back row
-anchor_even.pose.position.y = -0.06       #even rows start coordinate
+anchor_even.pose.position.x = 0.65       #check pls, back row
+anchor_even.pose.position.y = -0.3       #even rows start coordinate
 anchor_even.pose.position.z = 0      #clearance above block
 
 anchor_even.pose.orientation.x = GRASP_QUAT[0]
@@ -111,8 +111,8 @@ anchor_even.pose.orientation.z = GRASP_QUAT[2]
 anchor_even.pose.orientation.w = GRASP_QUAT[3]
 
 anchor_odd = deepcopy(anchor_even)
-anchor_odd.pose.position.x = 0.58         #check pls, 6 cm ahead of back row
-anchor_odd.pose.position.y = -0.08        #odd start, 2 cm off
+anchor_odd.pose.position.x = 0.75        #check pls, 6 cm ahead of back row
+anchor_odd.pose.position.y = -0.25        #odd start, 2 cm off
 
 positions = {}
 for i in range(7):
@@ -126,13 +126,13 @@ Failure conditions
 '''
 #for failure condition: empty pickup
 anchor_empty = deepcopy(anchor_even)
-anchor_empty.pose.position.x = 0.70          #check pls, should be clear of both rows
-anchor_empty.pose.position.y = -0.06         #y coor with no block
+anchor_empty.pose.position.x = 0.85         #check pls, should be clear of both rows
+anchor_empty.pose.position.y = -0.3         #y coor with no block
 positions["empty"] = anchor_empty
 
 # free-space drop pose (check pls, anywhere away from the box)
 FREE_SPACE_POSE = deepcopy(positions["block_0"])
-FREE_SPACE_POSE.pose.position.x += 0.15 #check
+FREE_SPACE_POSE.pose.position.x -= 0.1 #check
 FREE_SPACE_POSE.pose.position.z += 0.15 #check
 
 
@@ -209,7 +209,6 @@ def pick_up_cube_release(key): #fail helper
 
 def deposit_at_box():  #fail helper
     #used by fail modes only; normal path has this inline
-    move_slow(mgc_global)
     if not move_to_box():
         return False
     open_gripper()
@@ -225,7 +224,6 @@ def deposit_at_box():  #fail helper
     return True
 
 def deposit_at(pose):  #fail helper, only for failed deposit area
-    move_slow(mgc)
     if not move_to_pose(pose):
         return False
     open_gripper()
@@ -265,7 +263,6 @@ def get_block_in_line(key, mode):
         return False
 
     #move to box, and drop
-    move_slow(mgc_global)
     if not move_to_box():
         return False
     open_gripper()
@@ -283,7 +280,7 @@ def get_block_in_line(key, mode):
 #actual start
 '''
 IN PROGRESS, random selector of initial positions
-'''
+
 if RANDOMIZE: #when randomize active, check top
     todo = [k for k in positions.keys() if k != "empty"] #avoid failure conditions
     random.shuffle(todo)
@@ -315,10 +312,9 @@ ready()
 '''
 #for testing:
 key = "block_0" #or for key in todo:
-mode = "repeated_drop"  # "empty_pickup" / "drop_in_space"
+mode = "drop_in_space"   # "repeated_drop" / "empty_pickup" / "drop_in_space"
 ready()
 rospy.sleep(rospy.Duration(1.0))
 ok = get_block_in_line(key, mode)
 rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
 ready()
-'''
