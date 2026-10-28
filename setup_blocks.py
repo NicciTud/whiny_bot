@@ -10,7 +10,7 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import String as StringMsg
 
 rospy.init_node('cube_handover_arrangement', anonymous=False)
-PLACE_DESCEND = 0.185
+PLACE_DESCEND = 0.178
 #gripper commands, open close
 gripper_cmd = rospy.Publisher('/robot/gripper/command', GripperCommand, queue_size=1)
 def open_gripper():
@@ -33,7 +33,7 @@ def say(text):
     msg.data = text
     say_pub.publish(msg)
 
-def wait_for_external_effort(min_effort=3.0):
+def wait_for_external_effort(min_effort=2.0):
     recent_efforts = []
     import threading
     condition = threading.Condition()
@@ -71,8 +71,8 @@ mgc_global = moveit_commander.MoveGroupCommander("arm")
 mgc_global.set_max_velocity_scaling_factor(1.0)
 mgc_global.set_max_acceleration_scaling_factor(1.0)
 mgc = moveit_commander.MoveGroupCommander("arm_local")
-mgc.set_max_velocity_scaling_factor(1.0)
-mgc.set_max_acceleration_scaling_factor(1.0)
+mgc.set_max_velocity_scaling_factor(0.2)
+mgc.set_max_acceleration_scaling_factor(0.2)
 
 psi= moveit_commander.PlanningSceneInterface()
 
@@ -98,9 +98,9 @@ handover_posture.name = ["right_j0", "right_j1", "right_j2", "right_j3", "right_
 handover_posture.position = [-0.24144140625, 1.0161748046875, -0.1290107421875, -2.0135302734375, -0.1491611328125, 1.2109267578125, -0.000138671875]
 
 #hardcoded in lab
-gap = 0.12    # y step between blocks in the same row, 12 cm apart center to center
+#gap = 0.12    # y step between blocks in the same row, 12 cm apart center to center
 GRASP_QUAT = (0.07169260225135074, -0.9963911848868929, 0.015748911465860584, 0.04262334160720189)   #from top grasp
-
+'''
 anchor_even = geometry_msgs.msg.PoseStamped()
 anchor_even.header.frame_id = "base"
 anchor_even.pose.position.x = 0.65       #check pls, back row
@@ -115,13 +115,113 @@ anchor_even.pose.orientation.w = GRASP_QUAT[3]
 anchor_odd = deepcopy(anchor_even)
 anchor_odd.pose.position.x = 0.75        #check pls, 10 cm ahead of back row
 anchor_odd.pose.position.y = -0.24       #odd start, 5 cm off
-
+'''
 positions = {}
+'''
 for i in range(7):
     base = anchor_even if i % 2 == 0 else anchor_odd
     loc = deepcopy(base)
     loc.pose.position.y = base.pose.position.y + (i // 2) * gap
     positions["block_%d" % i] = loc
+'''
+
+#back row, 0
+key = "block_0"
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.65       #check pls, back row
+loc.pose.position.y = -0.3       #even rows start coordinate
+loc.pose.position.z = 0           #clearance above block
+
+loc.pose.orientation.x = GRASP_QUAT[0]
+loc.pose.orientation.y = GRASP_QUAT[1]
+loc.pose.orientation.z = GRASP_QUAT[2]
+loc.pose.orientation.w = GRASP_QUAT[3]
+positions[key] = loc
+
+#front row, 1
+key = "block_1"
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.75     
+loc.pose.position.y = -0.25      
+loc.pose.position.z = 0           
+
+loc.pose.orientation.x = GRASP_QUAT[0]
+loc.pose.orientation.y = GRASP_QUAT[1]
+loc.pose.orientation.z = GRASP_QUAT[2]
+loc.pose.orientation.w = GRASP_QUAT[3]
+positions[key] = loc
+
+#back row, 2
+key = "block_2"
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.65       #check pls, back row
+loc.pose.position.y = -0.18       #even rows start coordinate
+loc.pose.position.z = 0           #clearance above block
+
+loc.pose.orientation.x = GRASP_QUAT[0]
+loc.pose.orientation.y = GRASP_QUAT[1]
+loc.pose.orientation.z = GRASP_QUAT[2]
+loc.pose.orientation.w = GRASP_QUAT[3]
+positions[key] = loc
+
+#front row, 3
+key = "block_3"
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.75     
+loc.pose.position.y = -0.13      
+loc.pose.position.z = 0           
+
+loc.pose.orientation.x = GRASP_QUAT[0]
+loc.pose.orientation.y = GRASP_QUAT[1]
+loc.pose.orientation.z = GRASP_QUAT[2]
+loc.pose.orientation.w = GRASP_QUAT[3]
+positions[key] = loc
+
+#back row, 4
+key = "block_4"
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.65     
+loc.pose.position.y = -0.06     
+loc.pose.position.z = 0           
+
+loc.pose.orientation.x = GRASP_QUAT[0]
+loc.pose.orientation.y = GRASP_QUAT[1]
+loc.pose.orientation.z = GRASP_QUAT[2]
+loc.pose.orientation.w = GRASP_QUAT[3]
+positions[key] = loc
+
+#front row, 5
+key = "block_5"
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.75     
+loc.pose.position.y = -0.01     
+loc.pose.position.z = 0           
+
+loc.pose.orientation.x = GRASP_QUAT[0]
+loc.pose.orientation.y = GRASP_QUAT[1]
+loc.pose.orientation.z = GRASP_QUAT[2]
+loc.pose.orientation.w = GRASP_QUAT[3]
+positions[key] = loc
+
+#back row, 6
+key = "block_6"
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.65       #check pls, back row
+loc.pose.position.y = 0.06       #even rows start coordinate
+loc.pose.position.z = 0           #clearance above block
+
+loc.pose.orientation.x = GRASP_QUAT[0]
+loc.pose.orientation.y = GRASP_QUAT[1]
+loc.pose.orientation.z = GRASP_QUAT[2]
+loc.pose.orientation.w = GRASP_QUAT[3]
+positions[key] = loc
 
 
 def move_slow(mgc):
@@ -129,8 +229,8 @@ def move_slow(mgc):
     mgc.set_max_acceleration_scaling_factor(0.1)
 
 def move_fast(mgc):
-    mgc.set_max_velocity_scaling_factor(1.0)
-    mgc.set_max_acceleration_scaling_factor(1.0)
+    mgc.set_max_velocity_scaling_factor(0.2)
+    mgc.set_max_acceleration_scaling_factor(0.2)
 
 def move_to_handover():
     mgc_global.set_joint_value_target(handover_posture)
@@ -162,7 +262,7 @@ def place_at(key):
     place = deepcopy(positions[key])
     place.pose.position.z -= PLACE_DESCEND
     move_slow(mgc)
-    if not move_to_pose(positions[key]):
+    if not move_to_pose(place):
         return False
 
     # release and retreat
@@ -176,7 +276,7 @@ def place_at(key):
 
 open_gripper()
 ready()
-say("Alright, we have to arrange all these blocks properly. Please pass them to me one by one.")
+say("Please pass me the blocks to me one by one.")
 rospy.sleep(rospy.Duration(5.0))
 
 for key in positions:
@@ -186,4 +286,4 @@ for key in positions:
     rospy.loginfo("place %s: %s" % (key, "OK" if ok else "FAILED"))
     rospy.sleep(rospy.Duration(1.0))
 ready()
-say("All done, thank you for helping me out!")
+say("All done!")
