@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+    <node
+        name="joint_trajectory_commander"
+        pkg="intera_interface"
+        type="joint_trajectory_action_server.py"
+        args=" --mode position" />
+        
+
+</launch>
