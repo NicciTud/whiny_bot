@@ -10,12 +10,6 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import String as StringMsg
 import random
 
-'''
-IN PROGRESS check in lab
-pose_z - DESCEND >= tabletop_z , don't go below the table top.
-pose_z - DESCEND <= tabletop_z + h, you're at/below the block top, so you're actually on the block, not above it.
-'''
-
 DESCEND   = 0.185   # approach to grasp descent, tuned so gripper closes on block
 RETREAT_Z = 0.30   # post-drop lift to clear box
 RANDOMIZE = True  # True for actual, False for debugging
@@ -74,24 +68,13 @@ window_collider_pose.pose.position.z = 0.0
 window_collider_pose.pose.orientation.w = 1.0
 psi.add_box("window_collider", pose=window_collider_pose, size=(1.6, 0.2, 1.5))
 
-'''
-IN PROGRESS
-create reference joint states for box to drop cubes into
-'''
 #drop into box pose
 box_posture = JointState()
 box_posture.name = ["right_j0", "right_j1", "right_j2", "right_j3", "right_j4", "right_j5", "right_j6"]
 box_posture.position = [-0.2729189453125, 0.3767265625, -0.222205078125, -0.7939072265625, 0.250521484375, 1.6111279296875, 0.026794921875]
 
 
-#positions dict and keys
-'''
-IN PROGRESS
-update with all 0-6 initial block positions in lab
-make sure it is positioned a bit above the block, so it can crane game descend
-'''
-
-#hardcoded in lab
+#positions dict and keys, hardcoded in lab
 
 GRASP_QUAT = (0.07169260225135074,-0.9963911848868929, 0.015748911465860584,0.04262334160720189)   #pls check, find from top grasp
 
