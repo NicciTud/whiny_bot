@@ -5,7 +5,7 @@ from intera_core_msgs.msg import HeadPanCommand
 
 #Default and panning speed constants 
 RESET = 0.0
-SPEED = 0.2
+SPEED = 0.4
 
 def main():
     rospy.init_node("staring_state")
@@ -39,7 +39,7 @@ def main():
     rospy.Subscriber("looking_at_person/enable", Bool, on_flag, queue_size=1)
     rospy.Subscriber("looking_at_person/panning_angle", Float32, on_angle, queue_size=1)
 
-    rate = rospy.Rate(1)
+    rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         if state["enabled"]:
             move(state["pan"])
