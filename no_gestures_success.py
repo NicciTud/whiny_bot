@@ -10,10 +10,10 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import String as StringMsg
 import random
 
-DESCEND   = 0.185   # approach to grasp descent, tuned so gripper closes on block
+DESCEND   = 0.180   # approach to grasp descent, tuned so gripper closes on block
 RETREAT_Z = 0.30   # post-drop lift to clear box
 RANDOMIZE = True  # True for actual, False for debugging
-gap = 0.12    # y step between blocks in the same row, 6 cm apart center to center
+
 
 rospy.init_node('no_gestures_pickup', anonymous=False)
 
@@ -78,36 +78,113 @@ box_posture.position = [-0.2729189453125, 0.3767265625, -0.222205078125, -0.7939
 
 GRASP_QUAT = (0.07169260225135074,-0.9963911848868929, 0.015748911465860584,0.04262334160720189)   #pls check, find from top grasp
 
-anchor_even = geometry_msgs.msg.PoseStamped()
-anchor_even.header.frame_id = "base"
-anchor_even.pose.position.x = 0.65       #check pls, back row
-anchor_even.pose.position.y = -0.3       #even rows start coordinate
-anchor_even.pose.position.z = 0           #clearance above block
-
-anchor_even.pose.orientation.x = GRASP_QUAT[0]
-anchor_even.pose.orientation.y = GRASP_QUAT[1]
-anchor_even.pose.orientation.z = GRASP_QUAT[2]
-anchor_even.pose.orientation.w = GRASP_QUAT[3]
-
-anchor_odd = deepcopy(anchor_even)
-anchor_odd.pose.position.x = 0.75        #check pls, 10 cm ahead of back row
-anchor_odd.pose.position.y = -0.25       #odd start, 5 cm off
-
 positions = {}
-for i in range(7):
-    base = anchor_even if i % 2 == 0 else anchor_odd
-    loc = deepcopy(base)
-    loc.pose.position.y = base.pose.position.y + (i // 2) * gap
-    positions["block_%d" % i] = loc
 
+#back row, 0
+key = "block_0"
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.65       #check pls, back row
+loc.pose.position.y = -0.3       #even rows start coordinate
+loc.pose.position.z = 0           #clearance above block
+
+loc.pose.orientation.x = GRASP_QUAT[0]
+loc.pose.orientation.y = GRASP_QUAT[1]
+loc.pose.orientation.z = GRASP_QUAT[2]
+loc.pose.orientation.w = GRASP_QUAT[3]
+positions[key] = loc
+
+#front row, 1
+key = "block_1"
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.75     
+loc.pose.position.y = -0.25      
+loc.pose.position.z = 0           
+
+loc.pose.orientation.x = GRASP_QUAT[0]
+loc.pose.orientation.y = GRASP_QUAT[1]
+loc.pose.orientation.z = GRASP_QUAT[2]
+loc.pose.orientation.w = GRASP_QUAT[3]
+positions[key] = loc
+
+#back row, 2
+key = "block_2"
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.65       #check pls, back row
+loc.pose.position.y = -0.18       #even rows start coordinate
+loc.pose.position.z = 0           #clearance above block
+
+loc.pose.orientation.x = GRASP_QUAT[0]
+loc.pose.orientation.y = GRASP_QUAT[1]
+loc.pose.orientation.z = GRASP_QUAT[2]
+loc.pose.orientation.w = GRASP_QUAT[3]
+positions[key] = loc
+
+#front row, 3
+key = "block_3"
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.75     
+loc.pose.position.y = -0.13      
+loc.pose.position.z = 0           
+
+loc.pose.orientation.x = GRASP_QUAT[0]
+loc.pose.orientation.y = GRASP_QUAT[1]
+loc.pose.orientation.z = GRASP_QUAT[2]
+loc.pose.orientation.w = GRASP_QUAT[3]
+positions[key] = loc
+
+#back row, 4
+key = "block_4"
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.65     
+loc.pose.position.y = -0.06     
+loc.pose.position.z = 0           
+
+loc.pose.orientation.x = GRASP_QUAT[0]
+loc.pose.orientation.y = GRASP_QUAT[1]
+loc.pose.orientation.z = GRASP_QUAT[2]
+loc.pose.orientation.w = GRASP_QUAT[3]
+positions[key] = loc
+
+#front row, 5
+key = "block_5"
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.75     
+loc.pose.position.y = -0.01     
+loc.pose.position.z = 0           
+
+loc.pose.orientation.x = GRASP_QUAT[0]
+loc.pose.orientation.y = GRASP_QUAT[1]
+loc.pose.orientation.z = GRASP_QUAT[2]
+loc.pose.orientation.w = GRASP_QUAT[3]
+positions[key] = loc
+
+#back row, 6
+key = "block_6"
+loc = geometry_msgs.msg.PoseStamped()
+loc.header.frame_id = "base"
+loc.pose.position.x = 0.65       #check pls, back row
+loc.pose.position.y = 0.06       #even rows start coordinate
+loc.pose.position.z = 0           #clearance above block
+
+loc.pose.orientation.x = GRASP_QUAT[0]
+loc.pose.orientation.y = GRASP_QUAT[1]
+loc.pose.orientation.z = GRASP_QUAT[2]
+loc.pose.orientation.w = GRASP_QUAT[3]
+positions[key] = loc
 
 def move_slow(mgc):
     mgc.set_max_velocity_scaling_factor(0.03)
     mgc.set_max_acceleration_scaling_factor(0.1)
 
 def move_fast(mgc):
-    mgc.set_max_velocity_scaling_factor(1.0)
-    mgc.set_max_acceleration_scaling_factor(1.0)
+    mgc.set_max_velocity_scaling_factor(0.2)
+    mgc.set_max_acceleration_scaling_factor(0.2)
 
 def move_to_box():
     mgc_global.set_joint_value_target(box_posture)
@@ -172,9 +249,8 @@ def get_block_in_line(key):
     return True
 
 #actual start
-'''
-IN PROGRESS, random selector of initial positions
-'''
+#IN PROGRESS, random selector of initial positions
+
 if RANDOMIZE: #when randomize active, check top
     todo = list(positions.keys())
     random.shuffle(todo)
@@ -194,7 +270,7 @@ ready()
 
 '''
 #for testing:
-key = "block_0" #or for key in positions
+key = "block_2" #or for key in positions
 ready()
 rospy.sleep(rospy.Duration(1.0))
 ok = get_block_in_line(key)
