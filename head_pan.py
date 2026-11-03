@@ -5,21 +5,20 @@ from intera_core_msgs.msg import HeadPanCommand
 
 #Default and panning speed constants 
 RESET = 0.0
-SPEED = 0.4
-
+DEFAULT_SPEED = 0.2
 def main():
     rospy.init_node("staring_state")
 
     # Initialise publisher and state
     pub = rospy.Publisher("/robot/head/command_head_pan", HeadPanCommand, queue_size=1)
     # State the global variable to store the current state of the panning and whether it is enabled or not
-    state = {"enabled": False, "pan": RESET}
+    state = {"enabled": False, "pan": RESET, "speed": DEFAULT_SPEED}
 
 
     def move(target):
         cmd = HeadPanCommand()
         cmd.target = target
-        cmd.speed_ratio = SPEED
+        cmd.speed_ratio = state["speed"]
         cmd.pan_mode = HeadPanCommand.SET_ACTIVE_CANCELLATION_MODE
         pub.publish(cmd)
 
@@ -34,10 +33,16 @@ def main():
         if previous_state and  msg.data == False:
             move(RESET)
 
+    #callback for the speed
+    def on_speed(msg):
+        # speed ratio should be between 0.0 and 1.0
+        state["speed"] = max(0.0, min(1.0, msg.data))
+
 
     # Initialise the subscribers 
     rospy.Subscriber("looking_at_person/enable", Bool, on_flag, queue_size=1)
     rospy.Subscriber("looking_at_person/panning_angle", Float32, on_angle, queue_size=1)
+    rospy.Subscriber("looking_at_person/speed", Float32, on_speed, queue_size=1)
 
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
