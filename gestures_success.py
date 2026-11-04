@@ -5,6 +5,7 @@ Has failure conditions, for testing
 '''
 import sys
 import rospy
+import rospkg
 import moveit_commander
 import geometry_msgs.msg
 from copy import deepcopy
@@ -14,6 +15,8 @@ from std_msgs.msg import String as StringMsg, Bool, Float32
 import random
 from sound_play.libsoundplay import SoundClient
 import intera_interface
+
+from sensor_msgs.msg import Image
 
 
 DESCEND   = 0.182   # approach to grasp descent, tuned so gripper closes on block
@@ -31,12 +34,14 @@ enable_pub = rospy.Publisher("looking_at_person/enable", Bool, queue_size=1, lat
 angle_pub  = rospy.Publisher("looking_at_person/panning_angle", Float32, queue_size=1)
 #Sets the speed
 speed_pub = rospy.Publisher("looking_at_person/speed", Float32, queue_size=1)
+
 #Enables Sounds to be played
 sound = SoundClient()
 rospy.sleep(1)
 #sets the image publisher
 head_display = intera_interface.HeadDisplay()
-head_display.display_image("/home/hri26-group5/ros/src/whiny_bot/faces/neutral.png")
+pkg_path = rospkg.RosPack().get_path('whiny_bot')
+head_display.display_image(f"{pkg_path}/faces/neutral.png")
 
 #gripper commands, open close
 gripper_cmd = rospy.Publisher('/robot/gripper/command', GripperCommand, queue_size=1)
@@ -226,8 +231,8 @@ enable_pub.publish(True)
 enable_pub.publish(False)
 '''
 def jubilation():
-    head_display.display_image("/home/hri26-group5/ros/src/whiny_bot/faces/jubilation.png")
-    sound.playWave("/home/hri26-group5/ros/src/whiny_bot/sfx/jubilation.wav")
+    head_display.display_image(f"{pkg_path}/faces/jubilation.png")
+    sound.playWave(f"{pkg_path}/sfx/jubilation.wav")
     speed_pub.publish(0.6)
     angle_pub.publish(-0.3)
     enable_pub.publish(True)
@@ -240,15 +245,15 @@ def jubilation():
         #TO-DO: ADD arm raise gesture
 
 def stress():
-    head_display.display_image("/home/hri26-group5/ros/src/whiny_bot/faces/stressed.png")
-    sound.playWave("/home/hri26-group5/ros/src/whiny_bot/sfx/stressed.wav")
+    head_display.display_image(f"{pkg_path}/faces/stressed.png")
+    sound.playWave(f"{pkg_path}/sfx/stressed.wav")
     speed_pub.publish(0.9)
     angle_pub.publish(-0.4)
     enable_pub.publish(True)
     rospy.sleep(0.5)
 
     #jittery head shake delay is random 
-    for angle in (0.4, -0.2, 0.35, -0.4, 0.1, -0.3, 0.3):
+    for angle in (0.5, -0.2, 0.35, -0.4, 0.1, -0.3, 0.6):
         angle_pub.publish(angle)
         rospy.sleep(random.uniform(0.2, 0.5))
 
@@ -263,28 +268,28 @@ def stress():
     enable_pub.publish(False)
 
 def side_eye():
-    head_display.display_image("/home/hri26-group5/ros/src/whiny_bot/faces/sideye.png")
+    head_display.display_image(f"{pkg_path}/faces/sideye.png")
     speed_pub.publish(0.2)
     angle_pub.publish(-0.4)
     enable_pub.publish(True)
     rospy.sleep(0.4)
-    sound.playWave("/home/hri26-group5/ros/src/whiny_bot/sfx/sideeye.wav")
+    sound.playWave(f"{pkg_path}/sfx/sideeye.wav")
     speed_pub.publish(0.7) 
     enable_pub.publish(False)
 
 
 def focused_toblock():
-    head_display.display_image("/home/hri26-group5/ros/src/whiny_bot/faces/focused.png")
-    sound.playWave("/home/hri26-group5/ros/src/whiny_bot/sfx/focusedtoblock.wav")
+    head_display.display_image(f"{pkg_path}/faces/focused.png")
+    sound.playWave(f"{pkg_path}/sfx/focusedtoblock.wav")
     speed_pub.publish(0.3) 
-    angle_pub.publish(-0.1)    
+    angle_pub.publish(-0.2)    
     enable_pub.publish(True)
 
 def focused_tobox():
-    sound.playWave("/home/hri26-group5/ros/src/whiny_bot/sfx/focusedtobox.wav")
+    sound.playWave(f"{pkg_path}/sfx/focusedtobox.wav")
     speed_pub.publish(0.3)
     enable_pub.publish(False)   
-    head_display.display_image("/home/hri26-group5/ros/src/whiny_bot/faces/neutral.png")
+    head_display.display_image(f"{pkg_path}/faces/neutral.png")
 
 
 # ^Ashowa gesture code
@@ -485,8 +490,8 @@ ready()
 
 '''
 #for testing:
-key = "block_0" #or for key in todo:
-mode = "drop_in_space"   # "repeated_drop" / "empty_pickup" / "drop_in_space"
+key = "block_1" #or for key in todo:
+mode = ""   # "repeated_drop" / "empty_pickup" / "drop_in_space"
 ready()
 rospy.sleep(rospy.Duration(1.0))
 ok = get_block_in_line(key, mode)
