@@ -1,10 +1,38 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="rviz" default="true"/>
+
+    <node name="gripper_commander" pkg="cu_sawyer_support" type="gripper_commander"/>
+    <node name="screen_display_frame" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0.002 0 0 0 1 screen screen_display"/>
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+        <rosparam param="source_list">[robot/joint_states]</rosparam>
+        <param name="rate" value="100"/>
+    </node>
+
+    <include file="$(find cu_sawyer_moveit_config)/launch/move_group.launch"/>
+    <node name="moveit_by_name" pkg="moveit_by_name" type="moveit_by_name"/>
+
+    <node name="add_colliders_in_planning_scene" pkg="cu_sawyer_support" type="add_colliders_in_planning_scene"/>
+    <node name="initial_head_mode" pkg="cu_sawyer_support" type="initial_head_mode"/>
+
+    <include file="$(find tts_piper)/launch/tts_standalone.launch"/>
+
+    <include if="$(arg rviz)" file="$(dirname)/rviz.launch"/>
+
     <node
         name="joint_trajectory_commander"
         pkg="intera_interface"
         type="joint_trajectory_action_server.py"
         args=" --mode position" />
-        
+    <node 
+        name="staring_state"
+        pkg="whiny_bot"
+        type="head_pan.py"
+        output= "screen"/>
+    <node 
+        name="soundplay_node"
+        pkg="sound_play"
+        type="soundplay_node.py"
+        output= "screen"/>
 
 </launch>

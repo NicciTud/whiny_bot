@@ -191,8 +191,9 @@ def main():
 
     # free-space drop pose (check pls, anywhere away from the box)
     FREE_SPACE_POSE = deepcopy(positions["block_0"])
-    FREE_SPACE_POSE.pose.position.x -= 0.3 #check
-    FREE_SPACE_POSE.pose.position.z += 0.15 #check
+    FREE_SPACE_POSE.pose.position.x -= 0.1 #check
+    FREE_SPACE_POSE.pose.position.y -= 0.3 #check
+    FREE_SPACE_POSE.pose.position.z += 0.05 #check
 
     def move_slow(mgc):
         mgc.set_max_velocity_scaling_factor(0.03)
