@@ -36,6 +36,7 @@ sound = SoundClient()
 rospy.sleep(1)
 #sets the image publisher
 head_display = intera_interface.HeadDisplay()
+head_display.display_image("/home/hri26-group5/ros/src/whiny_bot/faces/neutral.png")
 
 #gripper commands, open close
 gripper_cmd = rospy.Publisher('/robot/gripper/command', GripperCommand, queue_size=1)
@@ -209,8 +210,8 @@ positions["empty"] = empty
 
 # free-space drop pose (check pls, anywhere away from the box)
 FREE_SPACE_POSE = deepcopy(positions["block_0"])
-FREE_SPACE_POSE.pose.position.x -= 0.3 #check
-FREE_SPACE_POSE.pose.position.z += 0.15 #check
+FREE_SPACE_POSE.pose.position.x += 0.3 #check
+FREE_SPACE_POSE.pose.position.z += 0.2 #check
 '''
 Screen Gestures - TO-DO:
 Shake head (>.<) in frustration
@@ -225,8 +226,8 @@ enable_pub.publish(True)
 enable_pub.publish(False)
 '''
 def jubilation():
-    head_display.display_image("happy face")
-    sound.playWave("happysound")
+    head_display.display_image("/home/hri26-group5/ros/src/whiny_bot/faces/jubilation.png")
+    sound.playWave("/home/hri26-group5/ros/src/whiny_bot/sfx/jubilation.wav")
     speed_pub.publish(0.6)
     angle_pub.publish(-0.3)
     enable_pub.publish(True)
@@ -239,8 +240,8 @@ def jubilation():
         #TO-DO: ADD arm raise gesture
 
 def stress():
-    head_display.display_image("stressed_face.png")
-    sound.playWave("stress.wav")
+    head_display.display_image("/home/hri26-group5/ros/src/whiny_bot/faces/stressed.png")
+    sound.playWave("/home/hri26-group5/ros/src/whiny_bot/sfx/stressed.wav")
     speed_pub.publish(0.9)
     angle_pub.publish(-0.4)
     enable_pub.publish(True)
@@ -262,26 +263,28 @@ def stress():
     enable_pub.publish(False)
 
 def side_eye():
-    head_display.display_image("side eye face")
+    head_display.display_image("/home/hri26-group5/ros/src/whiny_bot/faces/sideye.png")
     speed_pub.publish(0.2)
     angle_pub.publish(-0.4)
     enable_pub.publish(True)
     rospy.sleep(0.4)
-    sound.playWave("eheh.wav")
+    sound.playWave("/home/hri26-group5/ros/src/whiny_bot/sfx/sideeye.wav")
     speed_pub.publish(0.7) 
     enable_pub.publish(False)
 
 
 def focused_toblock():
-    head_display.display_image("ocused_face.png")
+    head_display.display_image("/home/hri26-group5/ros/src/whiny_bot/faces/focused.png")
+    sound.playWave("/home/hri26-group5/ros/src/whiny_bot/sfx/focusedtoblock.wav")
     speed_pub.publish(0.3) 
     angle_pub.publish(-0.1)    
     enable_pub.publish(True)
 
 def focused_tobox():
+    sound.playWave("/home/hri26-group5/ros/src/whiny_bot/sfx/focusedtobox.wav")
     speed_pub.publish(0.3)
     enable_pub.publish(False)   
-    head_display.display_image("neutral_face.png")
+    head_display.display_image("/home/hri26-group5/ros/src/whiny_bot/faces/neutral.png")
 
 
 # ^Ashowa gesture code
@@ -451,6 +454,7 @@ def get_block_in_line(key, mode):
 '''
 IN PROGRESS, random selector of initial positions
 '''
+'''
 if RANDOMIZE: #when randomize active, check top
     todo = [k for k in positions.keys() if k != "empty"] #avoid failure conditions
     random.shuffle(todo)
@@ -488,4 +492,3 @@ rospy.sleep(rospy.Duration(1.0))
 ok = get_block_in_line(key, mode)
 rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
 ready()
-'''

@@ -15,9 +15,9 @@ import random
 
 DESCEND   = 0.182   # approach to grasp descent, tuned so gripper closes on block
 RETREAT_Z = 0.30   # post-drop lift to clear box
-RANDOMIZE = True   #True for actual, False for debugging
+RANDOMIZE = False  #True for actual, False for debugging
 FAIL_COUNT = 2          #how many MAX blocks fail per run
-FAIL_RATE  = 0.5        #probability a block fails *given* it's chosen
+FAIL_RATE  = 1        #probability a block fails *given* it's chosen
 FAIL_MODES = ["repeated_drop", "empty_pickup", "drop_in_space"]
 
 rospy.init_node('no_gestures_pickup', anonymous=False)
@@ -355,6 +355,7 @@ def get_block_in_line(key, mode):
 '''
 IN PROGRESS, random selector of initial positions
 '''
+'''
 if RANDOMIZE: #when randomize active, check top
     todo = [k for k in positions.keys() if k != "empty"] #avoid failure conditions
     random.shuffle(todo)
@@ -362,7 +363,6 @@ else:
     todo = [k for k in positions.keys() if k != "empty"]
 
 print("pick order: ", todo)
-
 # fail assignment, capped and random
 fail_assignment = {}
 fails = 0
@@ -382,14 +382,62 @@ for key in todo:
     get_block_in_line(key, fail_assignment[key])
     rospy.sleep(rospy.Duration(1.0))
 ready()
-
 '''
 #for testing:
-key = "block_0" #or for key in todo:
-mode = "drop_in_space"   # "repeated_drop" / "empty_pickup" / "drop_in_space"
+
+key = "block_0"
+mode = ""
 ready()
 rospy.sleep(rospy.Duration(1.0))
 ok = get_block_in_line(key, mode)
 rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
 ready()
-'''
+
+
+key = "block_3"
+mode = "drop_in_space" 
+ready()
+rospy.sleep(rospy.Duration(1.0))
+ok = get_block_in_line(key, mode)
+rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
+ready()
+
+key = "block_5"
+mode = ""
+ready()
+rospy.sleep(rospy.Duration(1.0))
+ok = get_block_in_line(key, mode)
+rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
+ready()
+
+key = "block_1"
+mode = "empty_pickup"
+ready()
+rospy.sleep(rospy.Duration(1.0))
+ok = get_block_in_line(key, mode)
+rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
+ready()
+
+key = "block_4"
+mode = ""
+ready()
+rospy.sleep(rospy.Duration(1.0))
+ok = get_block_in_line(key, mode)
+rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
+ready()
+
+key = "block_2"
+mode = ""
+ready()
+rospy.sleep(rospy.Duration(1.0))
+ok = get_block_in_line(key, mode)
+rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
+ready()
+
+key = "block_6"
+mode = ""
+ready()
+rospy.sleep(rospy.Duration(1.0))
+ok = get_block_in_line(key, mode)
+rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
+ready()
