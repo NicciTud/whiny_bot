@@ -19,11 +19,8 @@ import intera_interface
 from sensor_msgs.msg import Image
 
 
-DESCEND   = 0.18   # approach to grasp descent, tuned so gripper closes on block
-RETREAT_Z = 0.30   # post-drop lift to clear box
-RANDOMIZE = True   #True for actual, False for debugging
-FAIL_COUNT = 2          #how many MAX blocks fail per run
-FAIL_RATE  = 0.5        #probability a block fails *given* it's chosen
+DESCEND   = 0.176   # approach to grasp descent, tuned so gripper closes on block
+RETREAT_Z = 0.2   # post-drop lift to clear box
 FAIL_MODES = ["repeated_drop", "empty_pickup", "drop_in_space"]
 
 
@@ -72,17 +69,14 @@ def main():
 
 
     mgc_global = moveit_commander.MoveGroupCommander("arm")
-    mgc_global.set_max_velocity_scaling_factor(1.0)
-    mgc_global.set_max_acceleration_scaling_factor(1.0)
+    mgc_global.set_max_velocity_scaling_factor(0.2)
+    mgc_global.set_max_acceleration_scaling_factor(0.2)
     mgc = moveit_commander.MoveGroupCommander("arm_local")
     mgc.set_max_velocity_scaling_factor(0.2)
     mgc.set_max_acceleration_scaling_factor(0.2)
 
     psi= moveit_commander.PlanningSceneInterface()
 
-    ''' 
-    IN PROGRESS: adjust table 
-    '''
     table_pose = geometry_msgs.msg.PoseStamped()
     table_pose.header.frame_id = "base"
     table_pose.pose.position.x = 0.75 #maybe a few cm forward so we dont get joint limited
@@ -220,8 +214,10 @@ def main():
 
     # free-space drop pose (check pls, anywhere away from the box)
     FREE_SPACE_POSE = deepcopy(positions["block_0"])
-    FREE_SPACE_POSE.pose.position.x += 0.3 #check
-    FREE_SPACE_POSE.pose.position.z += 0.2 #check
+    FREE_SPACE_POSE.pose.position.x -= 0.1 #check
+    FREE_SPACE_POSE.pose.position.y -= 0.3 #check
+    FREE_SPACE_POSE.pose.position.z += 0.05 #check
+
     '''
     Screen Gestures - TO-DO:
     Shake head (>.<) in frustration
@@ -238,7 +234,7 @@ def main():
 
     EXPRESSIONS = {
         "jubilation": {
-            "faces":  ["jubilation.png"],
+            "faces":  ["jubilation.png","jubilation2.png"],
             "sounds": ["jubilation.wav", "jubilation2.wav", "jubilation3.wav"],
         },
         "stress": {
@@ -250,8 +246,8 @@ def main():
             "sounds": ["sideeye.wav", "whoops.wav"],
         },
         "focused": {
-            "faces":  ["focused.png"],
-            "sounds": ["focused.wav","focused1.wav","focused3.wav"],
+            "faces":  ["focused.png", "focused2.png"],
+            "sounds": ["focused.wav","focused2.wav","focused3.wav"],
         },
     }
 
@@ -290,6 +286,8 @@ def main():
             angle_pub.publish(angle)
             rospy.sleep(0.4)
         enable_pub.publish(False)
+        rospy.sleep(2.0)
+        head_display.display_image(f"{pkg_path}/faces/neutral.png")
             #TO-DO: ADD arm raise gesture
 
     def stress():
@@ -333,8 +331,8 @@ def main():
     def focused_tobox():
         play_expression("focused")
         speed_pub.publish(0.3)
-        enable_pub.publish(False)   
-        head_display.display_image(f"{pkg_path}/faces/neutral.png")
+        enable_pub.publish(False)
+
 
 
     def move_slow(mgc):
@@ -346,16 +344,22 @@ def main():
         mgc.set_max_acceleration_scaling_factor(0.2)
 
     def move_to_box():
+        if shutdown():
+            return False
         mgc_global.set_joint_value_target(box_posture)
         return mgc_global.go(wait=True)
 
     def move_to_pose(pose):
+        if shutdown():
+            return False
         mgc.set_pose_target(pose)
         return mgc.go(wait=True)
 
     def ready():
+        if shutdown():
+            return False
         mgc_global.set_named_target("ready")
-        mgc_global.go(wait=True)
+        return mgc_global.go(wait=True)
 
     #for picking up cube, literally just move and grasp
 
@@ -507,7 +511,7 @@ def main():
     ok = get_block_in_line(key, mode)
     rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
     ready()
-
+'''
     if shutdown():
         return
     key = "block_3"
@@ -567,6 +571,7 @@ def main():
     ok = get_block_in_line(key, mode)
     rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
     ready()
-
+    ready()
+'''
 if __name__ == '__main__':
     main()

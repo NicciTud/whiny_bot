@@ -13,7 +13,7 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import String as StringMsg
 import random
 
-DESCEND   = 0.18   # approach to grasp descent, tuned so gripper closes on block
+DESCEND   = 0.176   # approach to grasp descent, tuned so gripper closes on block
 RETREAT_Z = 0.30   # post-drop lift to clear box
 FAIL_MODES = ["repeated_drop", "empty_pickup", "drop_in_space"]
 
@@ -353,6 +353,7 @@ def main():
             return False
 
         return True
+        
 
     #actual start
     if shutdown():
@@ -364,7 +365,7 @@ def main():
     ok = get_block_in_line(key, mode)
     rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
     ready()
-
+'''
     if shutdown():
         return
     key = "block_3"
@@ -373,7 +374,6 @@ def main():
     rospy.sleep(rospy.Duration(1.0))
     ok = get_block_in_line(key, mode)
     rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
-    ready()
 
     if shutdown():
         return
@@ -424,6 +424,6 @@ def main():
     ok = get_block_in_line(key, mode)
     rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
     ready()
-
+'''
 if __name__ == '__main__':
     main()
