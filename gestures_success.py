@@ -232,6 +232,11 @@ enable_pub.publish(False)
 '''
 def jubilation():
     head_display.display_image(f"{pkg_path}/faces/jubilation.png")
+    
+    # Insert code for randomiser 
+
+
+    #stops here 
     sound.playWave(f"{pkg_path}/sfx/jubilation.wav")
     speed_pub.publish(0.6)
     angle_pub.publish(-0.3)
