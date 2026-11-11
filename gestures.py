@@ -247,7 +247,7 @@ def main():
         },
         "focused": {
             "faces":  ["focused.png", "focused2.png"],
-            "sounds": ["focused.wav","focused2.wav","focused3.wav"],
+            "sounds": ["focused.wav","focused2.wav","focused3.wav","focused4.wav"],
         },
     }
 
