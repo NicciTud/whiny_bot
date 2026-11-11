@@ -511,7 +511,7 @@ def main():
     ok = get_block_in_line(key, mode)
     rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
     ready()
-'''
+
     if shutdown():
         return
     key = "block_3"
@@ -572,6 +572,6 @@ def main():
     rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
     ready()
     ready()
-'''
+
 if __name__ == '__main__':
     main()

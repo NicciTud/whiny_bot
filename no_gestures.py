@@ -14,7 +14,7 @@ from std_msgs.msg import String as StringMsg
 import random
 
 DESCEND   = 0.176   # approach to grasp descent, tuned so gripper closes on block
-RETREAT_Z = 0.30   # post-drop lift to clear box
+RETREAT_Z = 0.2   # post-drop lift to clear box
 FAIL_MODES = ["repeated_drop", "empty_pickup", "drop_in_space"]
 
 def main():
@@ -47,8 +47,8 @@ def main():
 
 
     mgc_global = moveit_commander.MoveGroupCommander("arm")
-    mgc_global.set_max_velocity_scaling_factor(1.0)
-    mgc_global.set_max_acceleration_scaling_factor(1.0)
+    mgc_global.set_max_velocity_scaling_factor(0.2)
+    mgc_global.set_max_acceleration_scaling_factor(0.2)
     mgc = moveit_commander.MoveGroupCommander("arm_local")
     mgc.set_max_velocity_scaling_factor(0.2)
     mgc.set_max_acceleration_scaling_factor(0.2)
@@ -365,7 +365,7 @@ def main():
     ok = get_block_in_line(key, mode)
     rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
     ready()
-'''
+
     if shutdown():
         return
     key = "block_3"
@@ -424,6 +424,6 @@ def main():
     ok = get_block_in_line(key, mode)
     rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
     ready()
-'''
+
 if __name__ == '__main__':
     main()
