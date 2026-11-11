@@ -56,7 +56,6 @@ def wait_for_external_effort(min_effort=2.0):
             if abs(effort - median_efforts[data.effort.index(effort)]) > min_effort:
                 # signal condition
                 with condition:
-                    say("beep")
                     sub.unregister()
                     condition.notify_all()
                 return
@@ -276,7 +275,7 @@ def place_at(key):
 
 open_gripper()
 ready()
-say("Please pass me the blocks to me one by one.")
+say("Please pass me the blocks one by one.")
 rospy.sleep(rospy.Duration(5.0))
 
 for key in positions:
