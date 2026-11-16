@@ -15,10 +15,23 @@ import random
 
 DESCEND   = 0.176   # approach to grasp descent, tuned so gripper closes on block
 RETREAT_Z = 0.2   # post-drop lift to clear box
-FAIL_MODES = ["repeated_drop", "empty_pickup", "drop_in_space"]
+FAIL_MODES = ["empty_pickup", "drop_in_space"]
+FAIL_SCRIPTS = {
+    "A": {0: "empty_pickup", 3: "drop_in_space"}, 
+    "B": {1: "empty_pickup", 4: "drop_in_space"},  
+    "C": {2: "empty_pickup", 5: "drop_in_space"}   
+}
+PICKUP_ORDER = ["block_0", "block_3", "block_5", "block_1", "block_4", "block_2", "block_6"]
 
 def main():
     rospy.init_node('no_gestures_pickup', anonymous=False)
+    if len(sys.argv) < 2 or sys.argv[1] not in FAIL_SCRIPTS:
+        rospy.logerr("Please provide a valid script: A, B, or C. Example: rosrun no_gestures.py A")
+        return
+    
+    script_letter = sys.argv[1]
+    fail_blocks = FAIL_SCRIPTS[script_letter]
+    rospy.loginfo(f"Starting with Script {script_letter}. Failing on blocks: {fail_blocks}")
     # bail out if Ctrl+C was hit
     def shutdown():
         return rospy.is_shutdown()
@@ -250,28 +263,6 @@ def main():
     IN PROGRESS
     check in lab for failure conditions
     '''
-    def pick_up_cube_release(key): #fail helper
-        #like pick_up_cube, but opens instead of closing: block dropped in place
-        open_gripper()
-        move_fast(mgc)
-        if not move_to_pose(positions[key]):
-            return False
-
-        grasp = deepcopy(positions[key])
-        grasp.pose.position.z -= DESCEND
-        move_slow(mgc)
-        if not move_to_pose(grasp):
-            return False
-
-        open_gripper()          #"drop" the block at the grasp position
-
-        move_fast(mgc)
-        if not move_to_pose(positions[key]):
-            return False
-
-        return True
-
-
     def deposit_at_box():  #fail helper
         #used by fail modes only; normal path has this inline
         if not move_to_box():
@@ -310,22 +301,16 @@ def main():
 
         return True
 
-    # going to position of block and executing pick_up_cube()
+    #going to position of block and executing pick_up_cube()
     def get_block_in_line(key, mode):
         # fail modes
-        if mode == "repeated_drop": #failure condition 1
-            rospy.loginfo("block %s: repeated_drop fail condition" % key)
-            pick_up_cube_release(key)
-            deposit_at_box()
-            return False
-
-        if mode == "empty_pickup": #failure condition 2
+        if mode == "empty_pickup": #failure condition 1
             rospy.loginfo("block %s: empty_pickup fail condition" % key)
             pick_up_cube("empty")
             deposit_at_box()
             return False
 
-        if mode == "drop_in_space": #failure condition 3
+        if mode == "drop_in_space": #failure condition 2
             rospy.loginfo("block %s: drop_in_space fail condition" % key)
             if not pick_up_cube(key):
                 return False
@@ -353,76 +338,21 @@ def main():
             return False
 
         return True
-        
-
     #actual start
     if shutdown():
         return
-    key = "block_0"
-    mode = ""
-    ready()
-    rospy.sleep(rospy.Duration(1.0))
-    ok = get_block_in_line(key, mode)
-    rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
-    ready()
-
-    if shutdown():
-        return
-    key = "block_3"
-    mode = "drop_in_space"
-    ready()
-    rospy.sleep(rospy.Duration(1.0))
-    ok = get_block_in_line(key, mode)
-    rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
-
-    if shutdown():
-        return
-    key = "block_5"
-    mode = ""
-    ready()
-    rospy.sleep(rospy.Duration(1.0))
-    ok = get_block_in_line(key, mode)
-    rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
-    ready()
-
-    if shutdown():
-        return
-    key = "block_1"
-    mode = "empty_pickup"
-    ready()
-    rospy.sleep(rospy.Duration(1.0))
-    ok = get_block_in_line(key, mode)
-    rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
-    ready()
-
-    if shutdown():
-        return
-    key = "block_4"
-    mode = ""
-    ready()
-    rospy.sleep(rospy.Duration(1.0))
-    ok = get_block_in_line(key, mode)
-    rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
-    ready()
-
-    if shutdown():
-        return
-    key = "block_2"
-    mode = ""
-    ready()
-    rospy.sleep(rospy.Duration(1.0))
-    ok = get_block_in_line(key, mode)
-    rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
-    ready()
-
-    if shutdown():
-        return
-    key = "block_6"
-    mode = ""
-    ready()
-    rospy.sleep(rospy.Duration(1.0))
-    ok = get_block_in_line(key, mode)
-    rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
+    for i, key in enumerate(PICKUP_ORDER):
+        if shutdown():
+            break      
+        mode = ""  
+        #check if the current block is a failure
+        if i in fail_blocks:
+            mode = fail_blocks[i] # This grabs either "empty_pickup" or "drop_in_space"
+            rospy.loginfo(f"Failure on {key} (Mode: {mode})")
+        ready()
+        rospy.sleep(rospy.Duration(1.0))
+        ok = get_block_in_line(key, mode)
+        rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
     ready()
 
 if __name__ == '__main__':
