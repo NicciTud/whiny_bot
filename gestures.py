@@ -451,6 +451,7 @@ def main():
         if mode == "empty_pickup": #failure condition 1
             rospy.loginfo("block %s: empty_pickup fail condition" % key)
             pick_up_cube("empty")
+            side_eye()
             deposit_at_box()
             stress()
             return False
