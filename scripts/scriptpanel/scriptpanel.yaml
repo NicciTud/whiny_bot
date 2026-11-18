@@ -15,6 +15,10 @@ scripts:
       (Elbow down)
     group: C-motion
 
+  - label: Setup blocks
+    script: setup.sh
+    tooltip: robot places blocks on table
+
   - label: Condition A (1)
     script: ConditionA_1.sh
     tooltip: no gestures A

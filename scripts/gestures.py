@@ -15,6 +15,10 @@ from std_msgs.msg import String as StringMsg, Bool, Float32
 import os, random
 from sound_play.libsoundplay import SoundClient
 import intera_interface
+import subprocess
+import os
+import signal
+from datetime import datetime
 
 from sensor_msgs.msg import Image
 
@@ -442,6 +446,23 @@ def main():
 
         return True
 
+    def start_rosbag(script_letter):
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        bag_filename=f"Script_{script_letter}_{timestamp}.bag"
+
+        rospy.loginfo(f"Starting bag recording")
+
+        bag_topics = ["/joint_states", "/robot/gripper/command", "/tf", "/tf_static", "/rosout"]
+        process = subprocess.Popen(["rosbag", "record", "-O", bag_filename] + bag_topics, preexec_fn=os.setsid)
+        return process
+
+    def stop_rosbag(process):
+        if process is not None:
+            rospy.loginfo("Stopping rosbag recording")
+            os.killpg(os.getpgid(process.pid), signal.SIGINT)
+            process.wait()
+            rospy.loginfo("Rosbag recording stopped")
+
 
     # going to position of block and executing pick_up_cube()
     def get_block_in_line(key, mode):
@@ -490,6 +511,9 @@ def main():
 #actual start
     if shutdown():
         return
+    
+    bag_process = start_rosbag(script_letter)
+    
     for i, key in enumerate(PICKUP_ORDER):
         if shutdown():
             break      
@@ -504,6 +528,7 @@ def main():
         rospy.loginfo("block %s mode=%s ok=%s" % (key, mode, ok))
     ready()
 
+    stop_rosbag(bag_process)
 
 if __name__ == '__main__':
     main()

@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec rosrun whiny_bot no_gestures.py B
+exec rosrun whiny_bot gestures.py B
