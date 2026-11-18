@@ -1,0 +1,41 @@
+config:
+  num_buttons_per_row: 4
+  button_width: 140
+  button_height: 60
+  font: LiberationMono:Bold
+scripts:
+  - label: Enable robot
+    script: robot-enable.sh
+    tooltip: engage motors / unlock joints
+  
+  - label: Move to Ready
+    script: move-to-ready.sh
+    tooltip: |
+      Move robot to a generic "ready" state
+      (Elbow down)
+    group: C-motion
+
+  - label: Condition A (1)
+    script: ConditionA_1.sh
+    tooltip: no gestures A
+  
+  - label: Condition A (2)
+    script: ConditionA_2.sh
+    tooltip: no gestures B
+
+  - label: Condition A (3)
+    script: ConditionA_3.sh
+    tooltip: no gestures C 
+
+  - label: Condition B (1)
+    script: ConditionB_1.sh
+    tooltip: gestures A
+
+  - label: Condition B (2)
+    script: ConditionB_2.sh
+    tooltip: gestures B
+  
+  - label: Condition B (3)
+    script: ConditionB_3.sh
+    tooltip: gestures C
+  
